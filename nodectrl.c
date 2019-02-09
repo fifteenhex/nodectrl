@@ -2,6 +2,7 @@
 
 #include <nodectrl/nodectrl.h>
 #include <nodectrl/sysinfo.h>
+#include <nodectrl/reboot.h>
 #include <mosquitto_client.h>
 
 #define TOPICROOT "nodectrl"
@@ -37,6 +38,7 @@ int main(int argc, char** argv) {
 			mqtthost, mqttport);
 
 	nodectrl_mainloop_heartbeat_add(nodectrl, &sysinfo_hb);
+	nodectrl_mainloop_control_add(nodectrl, &reboot_ctrl);
 
 	nodectrl_mainloop_run(nodectrl);
 

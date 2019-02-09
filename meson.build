@@ -17,7 +17,8 @@ lib_deps = [ libgps_dep,
          
 lib_src = [ 'nodectrl_mainloop.c',
             'thermal.c',
-            'sysinfo.c' ]
+            'sysinfo.c',
+            'reboot.c' ]
 
 if libgps_dep.found()
 	lib_src += [ 'location.c' ]

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <json-glib/json-glib.h>
+#include <mosquitto_client.h>
 
 #define SUBTOPIC_HEARTBEAT	"heartbeat"
 #define SUBTOPIC_CTRL		"ctrl"
@@ -15,8 +16,7 @@ struct nodectrl_heartbeat {
 
 struct nodectrl_control {
 	void (*init)(gpointer context);
-	void (*onconnect)(gpointer context);
-	void (*onmsg)(gpointer context);
+	void (*onmsg)(MosquittoClient* client, const struct mosquitto_message* msg);
 	gsize contextsz;
 };
 

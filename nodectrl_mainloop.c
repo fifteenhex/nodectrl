@@ -20,6 +20,11 @@ struct nodectrl_control_instance {
 	gpointer context;
 };
 
+struct nodectrl_control_onmsgcontext {
+	MosquittoClient* client;
+	const struct mosquitto_message* msg;
+};
+
 static void nodectrl_heartbeat_call(gpointer data, gpointer user_data) {
 	struct nodectrl_heartbeat_instance* heartbeat = data;
 	JsonBuilder* jsonbuilder = user_data;
@@ -61,13 +66,32 @@ static gboolean nodectrl_heartbeat(gpointer data) {
 static gboolean nodectrl_connectedcallback(MosquittoClient* client,
 		void* something, gpointer user_data) {
 	struct nodectrl* cntx = user_data;
-	//ctrl_onconnected(cntx->id, cntx->mosqclient);
+	GString* topicstr = g_string_new(cntx->topicroot);
+	g_string_append(topicstr, "/");
+	g_string_append(topicstr, cntx->id);
+	g_string_append(topicstr, "/");
+	g_string_append(topicstr, SUBTOPIC_CTRL);
+	g_string_append(topicstr, "/#");
+	gchar* topic = g_string_free(topicstr, FALSE);
+	mosquitto_subscribe(mosquitto_client_getmosquittoinstance(client),
+	NULL, topic, 0);
+	g_free(topic);
 	return nodectrl_heartbeat(user_data);
+}
+
+static void nodectrl_messagecallback_call(gpointer data, gpointer user_data) {
+	struct nodectrl_control* ctrl = data;
+	struct nodectrl_control_onmsgcontext* callcntx = user_data;
+	ctrl->onmsg(callcntx->client, callcntx->msg);
 }
 
 static gboolean nodectrl_messagecallback(MosquittoClient* client,
 		const struct mosquitto_message* msg, gpointer user_data) {
-	//ctrl_onmessage(client, msg);
+	struct nodectrl* cntx = user_data;
+	struct nodectrl_control_onmsgcontext callcntx = { .client = client, .msg =
+			msg };
+	g_ptr_array_foreach(cntx->heartbeats, nodectrl_messagecallback_call,
+			&callcntx);
 	return TRUE;
 }
 

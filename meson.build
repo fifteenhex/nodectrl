@@ -4,15 +4,26 @@ mosquitto_glib = subproject('mosquitto_glib')
 
 cc = meson.get_compiler('c')
 
+libgps_dep = dependency('libgps', required : false)
+
 lib_deps = [ dependency('glib-2.0'),
          dependency('json-glib-1.0'),
-         dependency('libgps'),
+         libgps_dep,
          cc.find_library('m'),
          mosquitto_glib.get_variable('mosquitto_glib_dep')]
          
 lib_src = [ 'thermal.c',
-            'location.c',
             'sysinfo.c' ]
+
+if libgps_dep.found()
+	lib_src += [ 'location.c' ]
+endif
+
+conf_data = configuration_data()
+conf_data.set('havegps', libgps_dep.found() ? 1 : 0)
+configure_file(input : 'config.h.in',
+               output : 'config.h',
+               configuration : conf_data)
 
 lib_inc = include_directories('include')
 

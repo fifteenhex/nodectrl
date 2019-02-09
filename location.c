@@ -3,7 +3,7 @@
 #include <errno.h>
 #include <unistd.h>
 
-#include "include/location.h"
+#include "include/nodectrl/location.h"
 #include "json-glib-macros/jsonbuilderutils.h"
 
 static gpointer location_gps_threadfunc(gpointer data) {

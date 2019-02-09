@@ -1,5 +1,5 @@
 #include <mosquitto_client.h>
-#include "include/nodectrl.h"
+#include "include/nodectrl/nodectrl.h"
 #include "json-glib-macros/jsonbuilderutils.h"
 
 struct nodectrl {
@@ -7,12 +7,23 @@ struct nodectrl {
 	const gchar* topicroot;
 	const gchar* id;
 	GPtrArray* heartbeats;
+	GPtrArray* controls;
+};
+
+struct nodectrl_heartbeat_instance {
+	const struct nodectrl_heartbeat* heartbeat;
+	gpointer context;
+};
+
+struct nodectrl_control_instance {
+	const struct nodectrl_control* control;
+	gpointer context;
 };
 
 static void nodectrl_heartbeat_call(gpointer data, gpointer user_data) {
-	struct nodectrl_heartbeat* heartbeat = data;
+	struct nodectrl_heartbeat_instance* heartbeat = data;
 	JsonBuilder* jsonbuilder = user_data;
-	heartbeat->heartbeat(heartbeat->context, jsonbuilder);
+	heartbeat->heartbeat->heartbeat(heartbeat->context, jsonbuilder);
 }
 
 static gboolean nodectrl_heartbeat(gpointer data) {
@@ -79,11 +90,34 @@ struct nodectrl* nodectrl_mainloop_new(const gchar* topicroot, const gchar* id,
 	return nodectrl;
 }
 
-void nodectrl_mainloop_heartbeat_add(struct nodectrl* nodectrl,
-		struct nodectrl_heartbeat* heartbeat) {
+void nodectrl_mainloop_heartbeat_add(const struct nodectrl* nodectrl,
+		const struct nodectrl_heartbeat* heartbeat) {
+	struct nodectrl_heartbeat_instance* hbinstance = g_malloc(
+			sizeof(*hbinstance));
+	hbinstance->heartbeat = heartbeat;
+	hbinstance->context = NULL;
+	if (heartbeat->contextsz != 0)
+		hbinstance->context = g_malloc(heartbeat->contextsz);
+
 	if (heartbeat->init != NULL)
-		heartbeat->init(NULL);
-	g_ptr_array_add(nodectrl->heartbeats, heartbeat);
+		heartbeat->init(hbinstance->context);
+
+	g_ptr_array_add(nodectrl->heartbeats, hbinstance);
+}
+
+void nodectrl_mainloop_control_add(const struct nodectrl* nodectrl,
+		const struct nodectrl_control* control) {
+	struct nodectrl_control_instance* ctrlinstance = g_malloc(
+			sizeof(*ctrlinstance));
+	ctrlinstance->control = control;
+	ctrlinstance->context = NULL;
+	if (control->contextsz != 0)
+		ctrlinstance->context = g_malloc(control->contextsz);
+
+	if (control->init != NULL)
+		control->init(ctrlinstance->context);
+
+	g_ptr_array_add(nodectrl->heartbeats, ctrlinstance);
 }
 
 void nodectrl_mainloop_run(struct nodectrl* nodectrl) {

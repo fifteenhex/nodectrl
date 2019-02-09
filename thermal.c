@@ -1,4 +1,4 @@
-#include "include/thermal.h"
+#include "include/nodectrl/thermal.h"
 
 #include "json-glib-macros/jsonbuilderutils.h"
 

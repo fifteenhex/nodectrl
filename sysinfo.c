@@ -1,6 +1,6 @@
 #include <sys/sysinfo.h>
 
-#include "include/sysinfo.h"
+#include "include/nodectrl/sysinfo.h"
 #include "json-glib-macros/jsonbuilderutils.h"
 
 void sysinfo_heartbeat(void* nothing, JsonBuilder* jsonbuilder) {

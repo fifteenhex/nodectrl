@@ -1,8 +1,8 @@
 #define GETTEXT_PACKAGE "gtk20"
 
-#include <nodectrl.h>
+#include <nodectrl/nodectrl.h>
+#include <nodectrl/sysinfo.h>
 #include <mosquitto_client.h>
-#include "include/sysinfo.h"
 
 #define TOPICROOT "nodectrl"
 
@@ -36,9 +36,7 @@ int main(int argc, char** argv) {
 	struct nodectrl* nodectrl = nodectrl_mainloop_new(TOPICROOT, id, NULL,
 			mqtthost, mqttport);
 
-	struct nodectrl_heartbeat sysinfoheartbeat = { .init = NULL, .heartbeat =
-			sysinfo_heartbeat };
-	nodectrl_mainloop_heartbeat_add(nodectrl, &sysinfoheartbeat);
+	nodectrl_mainloop_heartbeat_add(nodectrl, &sysinfo_hb);
 
 	nodectrl_mainloop_run(nodectrl);
 

@@ -10,7 +10,8 @@ lib_deps = [ dependency('glib-2.0'),
          cc.find_library('m'),
          mosquitto_glib.get_variable('mosquitto_glib_dep')]
          
-lib_src = [ 'thermal.c' ]
+lib_src = [ 'thermal.c',
+            'location.c' ]
 
 lib_inc = include_directories('include')
 

@@ -11,7 +11,8 @@ lib_deps = [ dependency('glib-2.0'),
          mosquitto_glib.get_variable('mosquitto_glib_dep')]
          
 lib_src = [ 'thermal.c',
-            'location.c' ]
+            'location.c',
+            'sysinfo.c' ]
 
 lib_inc = include_directories('include')
 

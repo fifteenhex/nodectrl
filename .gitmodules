@@ -1,3 +1,6 @@
 [submodule "subprojects/mosquitto_glib"]
 	path = subprojects/mosquitto_glib
 	url = https://github.com/fifteenhex/mosquitto_glib.git
+[submodule "json-glib-macros"]
+	path = json-glib-macros
+	url = https://github.com/fifteenhex/json-glib-macros.git

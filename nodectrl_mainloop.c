@@ -101,6 +101,7 @@ struct nodectrl* nodectrl_mainloop_new(const gchar* topicroot, const gchar* id,
 	nodectrl->topicroot = topicroot;
 	nodectrl->id = id;
 	nodectrl->heartbeats = g_ptr_array_new();
+	nodectrl->controls = g_ptr_array_new();
 	nodectrl->mosqclient = mosquitto_client_new_plaintext(mqttid, mqtthost,
 			mqttport);
 
@@ -141,7 +142,7 @@ void nodectrl_mainloop_control_add(const struct nodectrl* nodectrl,
 	if (control->init != NULL)
 		control->init(ctrlinstance->context);
 
-	g_ptr_array_add(nodectrl->heartbeats, ctrlinstance);
+	g_ptr_array_add(nodectrl->controls, ctrlinstance);
 }
 
 void nodectrl_mainloop_run(struct nodectrl* nodectrl) {

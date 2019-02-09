@@ -1,6 +1,5 @@
 #pragma once
 
-#include <glib.h>
 #include <json-glib/json-glib.h>
 
 struct location {

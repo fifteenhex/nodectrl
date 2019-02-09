@@ -3,7 +3,7 @@
 #include "include/sysinfo.h"
 #include "json-glib-macros/jsonbuilderutils.h"
 
-void sysinfo_heartbeat(JsonBuilder* jsonbuilder) {
+void sysinfo_heartbeat(void* nothing, JsonBuilder* jsonbuilder) {
 	struct sysinfo si;
 	if (sysinfo(&si) == 0) {
 		JSONBUILDER_START_OBJECT(jsonbuilder, "sysinfo");

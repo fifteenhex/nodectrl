@@ -32,27 +32,35 @@ static void nodectrl_heartbeat_call(gpointer data, gpointer user_data) {
 	heartbeat->heartbeat->heartbeat(heartbeat->context, jsonbuilder);
 }
 
-static gboolean nodectrl_heartbeat(gpointer data) {
-	struct nodectrl* cntx = data;
+static void nodectrl_mainloop_refreshcookie(struct nodectrl* nodectrl) {
+	if (nodectrl->cookie != NULL)
+		g_free(nodectrl->cookie);
+	nodectrl->cookie = g_uuid_string_random();
+}
 
-	if (mosquitto_client_isconnected(cntx->mosqclient)) {
+static gboolean nodectrl_heartbeat(gpointer data) {
+	struct nodectrl* nodectrl = data;
+
+	if (mosquitto_client_isconnected(nodectrl->mosqclient)) {
 		JsonBuilder* jsonbuilder = json_builder_new_immutable();
 		json_builder_begin_object(jsonbuilder);
-		g_ptr_array_foreach(cntx->heartbeats, nodectrl_heartbeat_call,
+		g_ptr_array_foreach(nodectrl->heartbeats, nodectrl_heartbeat_call,
 				jsonbuilder);
 
-		JSONBUILDER_ADD_STRING(jsonbuilder, "cookie", cntx->cookie);
+		nodectrl_mainloop_refreshcookie(nodectrl);
+		JSONBUILDER_ADD_STRING(jsonbuilder, "cookie", nodectrl->cookie);
 
 		json_builder_end_object(jsonbuilder);
 
 		gsize jsonlen;
 		gchar* json = jsonbuilder_freetostring(jsonbuilder, &jsonlen, TRUE);
-		gchar* topic = mosquitto_client_createtopic(cntx->topicroot, cntx->id,
-				SUBTOPIC_HEARTBEAT);
+		gchar* topic = mosquitto_client_createtopic(nodectrl->topicroot,
+				nodectrl->id,
+				SUBTOPIC_HEARTBEAT, NULL);
 
 		mosquitto_publish(
-				mosquitto_client_getmosquittoinstance(cntx->mosqclient), NULL,
-				topic, jsonlen, json, 0, FALSE);
+				mosquitto_client_getmosquittoinstance(nodectrl->mosqclient),
+				NULL, topic, jsonlen, json, 0, FALSE);
 
 		g_free(topic);
 		g_free(json);
@@ -88,12 +96,6 @@ static gboolean nodectrl_messagecallback(MosquittoClient* client,
 	return TRUE;
 }
 
-static void nodectrl_mainloop_refreshcookie(struct nodectrl* nodectrl) {
-	if (nodectrl->cookie != NULL)
-		g_free(nodectrl->cookie);
-	nodectrl->cookie = g_uuid_string_random();
-}
-
 struct nodectrl* nodectrl_mainloop_new(const gchar* topicroot, const gchar* id,
 		const gchar* mqttid, const gchar* mqtthost, unsigned mqttport) {
 	struct nodectrl* nodectrl = g_malloc(sizeof(*nodectrl));
@@ -103,8 +105,7 @@ struct nodectrl* nodectrl_mainloop_new(const gchar* topicroot, const gchar* id,
 	nodectrl->controls = g_ptr_array_new();
 	nodectrl->mosqclient = mosquitto_client_new_plaintext(mqttid, mqtthost,
 			mqttport);
-
-	nodectrl_mainloop_refreshcookie(nodectrl);
+	nodectrl->cookie = NULL;
 
 	g_timeout_add(30 * 1000, nodectrl_heartbeat, nodectrl);
 

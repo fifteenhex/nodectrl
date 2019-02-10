@@ -8,6 +8,7 @@ struct nodectrl {
 	const gchar* id;
 	GPtrArray* heartbeats;
 	GPtrArray* controls;
+	gchar* cookie;
 };
 
 struct nodectrl_heartbeat_instance {
@@ -39,6 +40,9 @@ static gboolean nodectrl_heartbeat(gpointer data) {
 		json_builder_begin_object(jsonbuilder);
 		g_ptr_array_foreach(cntx->heartbeats, nodectrl_heartbeat_call,
 				jsonbuilder);
+
+		JSONBUILDER_ADD_STRING(jsonbuilder, "cookie", cntx->cookie);
+
 		json_builder_end_object(jsonbuilder);
 
 		gsize jsonlen;
@@ -95,6 +99,12 @@ static gboolean nodectrl_messagecallback(MosquittoClient* client,
 	return TRUE;
 }
 
+static void nodectrl_mainloop_refreshcookie(struct nodectrl* nodectrl) {
+	if (nodectrl->cookie != NULL)
+		g_free(nodectrl->cookie);
+	nodectrl->cookie = g_uuid_string_random();
+}
+
 struct nodectrl* nodectrl_mainloop_new(const gchar* topicroot, const gchar* id,
 		const gchar* mqttid, const gchar* mqtthost, unsigned mqttport) {
 	struct nodectrl* nodectrl = g_malloc(sizeof(*nodectrl));
@@ -104,6 +114,8 @@ struct nodectrl* nodectrl_mainloop_new(const gchar* topicroot, const gchar* id,
 	nodectrl->controls = g_ptr_array_new();
 	nodectrl->mosqclient = mosquitto_client_new_plaintext(mqttid, mqtthost,
 			mqttport);
+
+	nodectrl_mainloop_refreshcookie(nodectrl);
 
 	g_timeout_add(30 * 1000, nodectrl_heartbeat, nodectrl);
 

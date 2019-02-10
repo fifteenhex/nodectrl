@@ -47,14 +47,8 @@ static gboolean nodectrl_heartbeat(gpointer data) {
 
 		gsize jsonlen;
 		gchar* json = jsonbuilder_freetostring(jsonbuilder, &jsonlen, TRUE);
-
-		GString* topicstr = g_string_new(cntx->topicroot);
-		g_string_append(topicstr, "/");
-		g_string_append(topicstr, cntx->id);
-		g_string_append(topicstr, "/");
-		g_string_append(topicstr, SUBTOPIC_HEARTBEAT);
-
-		gchar* topic = g_string_free(topicstr, FALSE);
+		gchar* topic = mosquitto_client_createtopic(cntx->topicroot, cntx->id,
+				SUBTOPIC_HEARTBEAT);
 
 		mosquitto_publish(
 				mosquitto_client_getmosquittoinstance(cntx->mosqclient), NULL,
@@ -70,13 +64,8 @@ static gboolean nodectrl_heartbeat(gpointer data) {
 static gboolean nodectrl_connectedcallback(MosquittoClient* client,
 		void* something, gpointer user_data) {
 	struct nodectrl* cntx = user_data;
-	GString* topicstr = g_string_new(cntx->topicroot);
-	g_string_append(topicstr, "/");
-	g_string_append(topicstr, cntx->id);
-	g_string_append(topicstr, "/");
-	g_string_append(topicstr, SUBTOPIC_CTRL);
-	g_string_append(topicstr, "/#");
-	gchar* topic = g_string_free(topicstr, FALSE);
+	gchar* topic = mosquitto_client_createtopic(cntx->topicroot, cntx->id,
+	SUBTOPIC_CTRL, "#", NULL);
 	mosquitto_subscribe(mosquitto_client_getmosquittoinstance(client),
 	NULL, topic, 0);
 	g_free(topic);

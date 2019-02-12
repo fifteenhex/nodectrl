@@ -1,0 +1,1 @@
+git+git://github.com/fifteenhex/mqttbase.git#egg=mqttbase

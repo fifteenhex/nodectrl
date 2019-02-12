@@ -82,10 +82,11 @@ static gboolean nodectrl_connectedcallback(MosquittoClient* client,
 }
 
 static void nodectrl_messagecallback_call(gpointer data, gpointer user_data) {
-	struct nodectrl_control* ctrl = data;
+	struct nodectrl_control_instance* ctrl = data;
 	struct nodectrl_control_onmsgcontext* callcntx = user_data;
-	ctrl->onmsg(callcntx->nodectrl->mosqclient, callcntx->msg,
-			callcntx->nodectrl->safemode);
+	if (ctrl->control->onmsg != NULL)
+		ctrl->control->onmsg(callcntx->nodectrl->mosqclient, callcntx->msg,
+				callcntx->nodectrl->safemode);
 }
 
 static gboolean nodectrl_messagecallback(MosquittoClient* client,

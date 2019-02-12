@@ -4,6 +4,7 @@
 
 void reboot_onmessage(MosquittoClient* client,
 		const struct mosquitto_message* msg, gboolean safemode) {
+
 	char** splittopic;
 	int count;
 	mosquitto_sub_topic_tokenise(msg->topic, &splittopic, &count);

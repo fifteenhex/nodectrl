@@ -47,11 +47,15 @@ executable('nodectrl', exe_src,
 
 pytest = find_program('pytest-3', required : false)
 mosquitto = find_program('mosquitto', '/usr/sbin/mosquitto', required : false)
+valgrind = find_program('valgrind', required : false)
 if pytest.found() and mosquitto.found()
 	args = ['--mosquitto_path=' + mosquitto.path(),
 	        '--nodectrl_path=' + meson.build_root() + '/nodectrl',
 	        '--nodectrl_ca_path=' +  meson.source_root() + 'tests/nodectrl_test_ca.crt',
 		    '--capture=no', '--log-level=debug']
+    if(valgrind.found())
+        args += [ '--valgrind_path=' + valgrind.path() ]
+    endif
 	test('nodectrl', pytest, timeout : 120,
 	     args :  [meson.source_root() + '/tests/test_nodectrl.py'] + args,
              is_parallel : false)

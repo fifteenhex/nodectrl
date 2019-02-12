@@ -6,6 +6,8 @@
 #define SUBTOPIC_HEARTBEAT	"heartbeat"
 #define SUBTOPIC_CTRL		"ctrl"
 
+#define NODECTRL_OPTS	{ "controlca", 0, 0, G_OPTION_ARG_STRING, &controlca, "", "" }
+
 struct nodectrl;
 
 struct nodectrl_heartbeat {

@@ -18,7 +18,9 @@ int main(int argc, char** argv) {
 	gchar* mqttdevicecert = NULL;
 	gchar* mqttdevicekey = NULL;
 
-	GOptionEntry entries[] = { MQTTOPTS, { "nodeid", 'i', 0,
+	gchar* controlca;
+
+	GOptionEntry entries[] = { MQTTOPTS, NODECTRL_OPTS, { "nodeid", 'i', 0,
 			G_OPTION_ARG_STRING, &id, "", "" }, { NULL } };
 
 	GOptionContext* context = g_option_context_new("");

@@ -18,7 +18,8 @@ int main(int argc, char** argv) {
 	gchar* mqttdevicecert = NULL;
 	gchar* mqttdevicekey = NULL;
 
-	gchar* controlca;
+	gboolean nodectrl_safemode;
+	gchar* nodectrl_controlca;
 
 	GOptionEntry entries[] = { MQTTOPTS, NODECTRL_OPTS, { "nodeid", 'i', 0,
 			G_OPTION_ARG_STRING, &id, "", "" }, { NULL } };
@@ -37,7 +38,7 @@ int main(int argc, char** argv) {
 	}
 
 	struct nodectrl* nodectrl = nodectrl_mainloop_new(TOPICROOT, id, NULL,
-			mqtthost, mqttport);
+			mqtthost, mqttport, nodectrl_safemode);
 
 	nodectrl_mainloop_heartbeat_add(nodectrl, &sysinfo_hb);
 	nodectrl_mainloop_control_add(nodectrl, &reboot_ctrl);

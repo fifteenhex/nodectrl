@@ -6,7 +6,8 @@
 #define SUBTOPIC_HEARTBEAT	"heartbeat"
 #define SUBTOPIC_CTRL		"ctrl"
 
-#define NODECTRL_OPTS	{ "controlca", 0, 0, G_OPTION_ARG_STRING, &controlca, "", "" }
+#define NODECTRL_OPTS	{ "safemode", 0, 0, G_OPTION_ARG_NONE, &nodectrl_safemode, "", "" },\
+						{ "controlca", 0, 0, G_OPTION_ARG_STRING, &nodectrl_controlca, "", "" }
 
 struct nodectrl;
 
@@ -18,12 +19,14 @@ struct nodectrl_heartbeat {
 
 struct nodectrl_control {
 	void (*init)(gpointer context);
-	void (*onmsg)(MosquittoClient* client, const struct mosquitto_message* msg);
+	void (*onmsg)(MosquittoClient* client, const struct mosquitto_message* msg,
+			gboolean safemode);
 	gsize contextsz;
 };
 
 struct nodectrl* nodectrl_mainloop_new(const gchar* topicroot, const gchar* id,
-		const gchar* mqttid, const gchar* mqtthost, unsigned mqttport);
+		const gchar* mqttid, const gchar* mqtthost, unsigned mqttport,
+		gboolean safemode);
 void nodectrl_mainloop_heartbeat_add(const struct nodectrl* nodectrl,
 		const struct nodectrl_heartbeat* heartbeat);
 void nodectrl_mainloop_control_add(const struct nodectrl* nodectrl,

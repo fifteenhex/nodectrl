@@ -9,6 +9,7 @@ struct nodectrl {
 	GPtrArray* heartbeats;
 	GPtrArray* controls;
 	gchar* cookie;
+	gboolean safemode;
 };
 
 struct nodectrl_heartbeat_instance {
@@ -22,7 +23,7 @@ struct nodectrl_control_instance {
 };
 
 struct nodectrl_control_onmsgcontext {
-	MosquittoClient* client;
+	struct nodectrl* nodectrl;
 	const struct mosquitto_message* msg;
 };
 
@@ -83,21 +84,34 @@ static gboolean nodectrl_connectedcallback(MosquittoClient* client,
 static void nodectrl_messagecallback_call(gpointer data, gpointer user_data) {
 	struct nodectrl_control* ctrl = data;
 	struct nodectrl_control_onmsgcontext* callcntx = user_data;
-	ctrl->onmsg(callcntx->client, callcntx->msg);
+	ctrl->onmsg(callcntx->nodectrl->mosqclient, callcntx->msg,
+			callcntx->nodectrl->safemode);
 }
 
 static gboolean nodectrl_messagecallback(MosquittoClient* client,
 		const struct mosquitto_message* msg, gpointer user_data) {
 	struct nodectrl* cntx = user_data;
-	struct nodectrl_control_onmsgcontext callcntx = { .client = client, .msg =
+	struct nodectrl_control_onmsgcontext callcntx = { .nodectrl = cntx, .msg =
 			msg };
-	g_ptr_array_foreach(cntx->heartbeats, nodectrl_messagecallback_call,
+
+	g_message("control message on %s", msg->topic);
+
+	char** splittopic;
+	int count;
+	mosquitto_sub_topic_tokenise(msg->topic, &splittopic, &count);
+
+	g_message("action %s", splittopic[count - 1]);
+
+	g_ptr_array_foreach(cntx->controls, nodectrl_messagecallback_call,
 			&callcntx);
+
+	mosquitto_sub_topic_tokens_free(&splittopic, count);
 	return TRUE;
 }
 
 struct nodectrl* nodectrl_mainloop_new(const gchar* topicroot, const gchar* id,
-		const gchar* mqttid, const gchar* mqtthost, unsigned mqttport) {
+		const gchar* mqttid, const gchar* mqtthost, unsigned mqttport,
+		gboolean safemode) {
 	struct nodectrl* nodectrl = g_malloc(sizeof(*nodectrl));
 	nodectrl->topicroot = topicroot;
 	nodectrl->id = id;
@@ -106,6 +120,7 @@ struct nodectrl* nodectrl_mainloop_new(const gchar* topicroot, const gchar* id,
 	nodectrl->mosqclient = mosquitto_client_new_plaintext(mqttid, mqtthost,
 			mqttport);
 	nodectrl->cookie = NULL;
+	nodectrl->safemode = safemode;
 
 	g_timeout_add(30 * 1000, nodectrl_heartbeat, nodectrl);
 

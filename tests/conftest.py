@@ -55,7 +55,7 @@ def nodectrl_id():
 @pytest.fixture(scope="session")
 def nodectrl_process(mosquitto_port, nodectrl_path, nodectrl_id, nodectrl_ca_path):
     args = [nodectrl_path, '-h', 'localhost', '-p', str(mosquitto_port), '-i', nodectrl_id, '--controlca',
-            nodectrl_ca_path]
+            nodectrl_ca_path, '--safemode']
     process = Popen(args)
     time.sleep(2)
     assert process.poll() is None

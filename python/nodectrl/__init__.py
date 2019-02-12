@@ -32,7 +32,8 @@ class Node(MqttBase):
         self.__logger = logging.getLogger('nodectrl')
         self.mqtt_client.message_callback_add(heartbeat_topic, self.__on_heartbeat)
 
-    async def reboot(self):
+    async def reboot(self, safemode: False):
         self.__logger.debug('triggering node reboot')
         self.mqtt_client.publish('%s/%s/ctrl/%s' % (self.topic_root, self.id, CTRL_REBOOT))
-        return await asyncio.wait_for(self.__reboot_queue.get(), 5 * 60)
+        if not safemode:
+            return await asyncio.wait_for(self.__reboot_queue.get(), 5 * 60)

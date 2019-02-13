@@ -1,6 +1,6 @@
 import logging
-import mqttbase.mqttbase
-from mqttbase.mqttbase import MqttBase
+import mqttbase
+from mqttbase import MqttBase
 from asyncio import Queue
 import asyncio
 import json
@@ -28,7 +28,7 @@ class Node(MqttBase):
         self.topic_root = topic_root
         self.id = id
         heartbeat_topic = '%s/%s/%s' % (self.topic_root, id, HEARTBEAT)
-        super().__init__(host, port=port, id=mqttbase.mqttbase.create_client_id('nodectrl'), topics=[heartbeat_topic])
+        super().__init__(host, port=port, id=mqttbase.create_client_id('nodectrl'), topics=[heartbeat_topic])
         self.__logger = logging.getLogger('nodectrl')
         self.mqtt_client.message_callback_add(heartbeat_topic, self.__on_heartbeat)
 

@@ -23,5 +23,5 @@ script:
     ./python && ninja -C builddir test"
 
 after_success:
-  - ci/travisscripts/tagdev.sh $encrypted_d3e286bb4746_key $encrypted_d3e286bb4746_iv
+  - ci/travisscripts/tagdev.sh ci/deploy_key.enc $encrypted_d3e286bb4746_key $encrypted_d3e286bb4746_iv
 

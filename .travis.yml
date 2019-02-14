@@ -14,23 +14,14 @@ services:
   - docker
 
 before_install:
-  - openssl aes-256-cbc -K $encrypted_d3e286bb4746_key -iv $encrypted_d3e286bb4746_iv
-    -in deploy_key.enc -out ~/.ssh/id_rsa -d
-  - chmod 0400 ~/.ssh/id_rsa
-  - ls -l ~/.ssh/
   - docker pull debian:testing
 
 script:
-  - docker build -t withgit .
+  - docker -f ci/Dockerfile build -t withgit .
   - docker run withgit /bin/sh -c "cd /root && TRAVIS=true CC=$CC CXX=$CXX meson builddir
     && ninja -C builddir && pip3 install -r ./python/requirements.txt && pip3 install
     ./python && ninja -C builddir test"
 
 after_success:
-  - git config --global user.email "builds@travis-ci.com"
-  - git config --global user.name "Travis CI"
-  - git tag -d dev
-  - git tag dev -a -m "build $TRAVIS_BUILD_NUMBER"
-  - git remote add ffs `git remote get-url origin | sed -e s#https://#git@# -e s#github.com/#github.com:#`
-  - git push --force ffs dev
+  - ci/travisscripts/tagdev.sh $encrypted_d3e286bb4746_key $encrypted_d3e286bb4746_iv
 
